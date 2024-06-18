@@ -1,0 +1,21 @@
+{
+  "name": "test-2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "prettier": "npx prettier . --write",
+    "start:eth": "npx ts-node index.ts eth",
+    "start:btc": "npx ts-node index.ts btc"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "viem": "^2.15.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.4",
+    "prettier": "3.3.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
