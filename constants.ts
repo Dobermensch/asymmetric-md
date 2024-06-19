@@ -1,14 +1,19 @@
-import dotenv from 'dotenv'
 import { createPublicClient, createWalletClient, getContract, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { blastSepolia } from 'viem/chains'
 import { Address } from 'viem'
 import MoonOrDoomAbi from './abis/MoonOrDoom.json'
-
-dotenv.config()
+import config from './config'
 
 const doomerPKey = `0x${process.env.DOOMER_WALLET_PRIVATE_KEY}` as Address
 export const doomerAccount = privateKeyToAccount(doomerPKey)
+
+export const getLogger = () => {
+  if (config.enableLogs) {
+    return console.log
+  }
+  return () => {}
+}
 
 const moonerPKey = `0x${process.env.MOONER_WALLET_PRIVATE_KEY}` as Address
 export const moonerAccount = privateKeyToAccount(moonerPKey)

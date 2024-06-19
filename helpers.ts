@@ -5,12 +5,13 @@ import {
   formatEther,
   Address,
 } from 'viem'
-import { sepoliaClient, sepoliaWalletClient } from './constants'
+import { getLogger, sepoliaClient, sepoliaWalletClient } from './constants'
 import { Rounds } from './types'
 import config from './config'
 import MoonOrDoomAbi from './abis/MoonOrDoom.json'
 
 const ethBetAmount = config.ethBetAmount!
+const log = getLogger()
 
 export const calculateTotalTXValue = async (
   account: PrivateKeyAccount,
@@ -25,7 +26,7 @@ export const calculateTotalTXValue = async (
 
   const totalValueOfMoonTx = parseEther(ethBetAmount) + totalGasAmountUsedMoonTx
 
-  console.log(
+  log(
     `[Success] Entered ${round} round at epoch ${epoch} for a total of ${formatEther(totalValueOfMoonTx)}`
   )
 
@@ -33,7 +34,7 @@ export const calculateTotalTXValue = async (
     address: account.address,
   })
 
-  console.log(
+  log(
     `[INFO] Current ${round === Rounds.MOON ? Rounds.MOON : Rounds.DOOM} wallet value: ${formatEther(currentRoundWalletAccBalance)}`
   )
 }
@@ -59,11 +60,11 @@ export const claimRewards = async (
     })
 
   if (confirmedClaimMoonTxReceipt.status !== 'success') {
-    console.log('[ERROR] Claiming mooner rewards failed')
+    log('[ERROR] Claiming mooner rewards failed')
     return false
   }
 
-  console.log(`[SUCCESS] Claimed rewards for mooner account`)
+  log(`[SUCCESS] Claimed rewards for mooner account`)
 
   const doomClaimTxHash = await sepoliaWalletClient.writeContract({
     abi: MoonOrDoomAbi,
@@ -80,10 +81,10 @@ export const claimRewards = async (
     })
 
   if (confirmedClaimDoomTxReceipt.status !== 'success') {
-    console.log('[ERROR] Claiming doomer rewards failed')
+    log('[ERROR] Claiming doomer rewards failed')
     return false
   }
 
-  console.log(`[SUCCESS] Claimed rewards for doomer account`)
+  log(`[SUCCESS] Claimed rewards for doomer account`)
   return true
 }

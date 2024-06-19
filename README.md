@@ -19,9 +19,8 @@ We have to automate https://yologames.io/moon-or-doom/blast/eth-usd. The smart c
 - Have this script continuously run for X number of rounds (X is configurable in a config file)
 - Have the code be flexible enough to trade the BTC contract as well, and have a configuration that flows through seamlessly.
 - After you win or lose a round: you can claim the winnings in an account. Have the script be configurable to claim winnings every X number rounds.
+- Provide extensive logging that can be enabled / disabled - the goal is the trader running the script has a good idea of the current state of the script at any point. The more info you provide, the better.
 
 ## TODO
-
-- Provide extensive logging that can be enabled / disabled - the goal is the trader running the script has a good idea of the current state of the script at any point. The more info you provide, the better. (Need to enable/disable logging)
 - Do an error check such that after the placing of a bet, the amount reducing in our ETH account matches what we expect in the bet amount plus gas fees.
 - Ensure the setup is as secure as possible, and detail out how you would think about security, given that we are likely going to have put private keys on our server. Explain your thought process.
