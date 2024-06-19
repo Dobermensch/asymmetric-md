@@ -16,14 +16,13 @@ import { Address, formatEther, parseEther } from 'viem'
 import { Rounds, Tokens } from './types'
 import { calculateTotalTXValue, claimRewards } from './helpers'
 
-const ethBetAmount = config.ethBetAmount!
 const maxNumberOfRounds = config.numOfRounds
 let roundsEntered: bigint[] = []
 let roundNumber = 0
 
 const log = getLogger()
 
-const onNewRoundStarted = async (epoch: bigint, contractAddress: Address) => {
+const onNewRoundStarted = async (betAmt: string, epoch: bigint, contractAddress: Address) => {
   if (roundNumber >= config.numOfRounds) {
     log(
       `[INFO] ROUNDS (${roundNumber}) exceeds max number of rounds (${maxNumberOfRounds})`
@@ -33,7 +32,7 @@ const onNewRoundStarted = async (epoch: bigint, contractAddress: Address) => {
 
   // Can choose to simulate contracts before writing
 
-  const betAmount = parseEther(ethBetAmount)
+  const betAmount = parseEther(betAmt)
 
   const moonTxHash = await sepoliaWalletClient.writeContract({
     abi: MoonOrDoomAbi,
@@ -58,6 +57,7 @@ const onNewRoundStarted = async (epoch: bigint, contractAddress: Address) => {
 
   calculateTotalTXValue(
     moonerAccount,
+    betAmount,
     epoch,
     Rounds.MOON,
     confirmedMoonTxReceipt
@@ -88,6 +88,7 @@ const onNewRoundStarted = async (epoch: bigint, contractAddress: Address) => {
 
   calculateTotalTXValue(
     doomerAccount,
+    betAmount,
     epoch,
     Rounds.DOOM,
     confirmedDoomTxReceipt
@@ -136,19 +137,22 @@ const start = async () => {
       process.exit(1)
     }
 
+    let betAmount = '0'
     let contractAddress
     let contract
 
     switch (token) {
       case Tokens.BTC:
-        ;[contractAddress, contract] = [
+        ;[betAmount, contractAddress, contract] = [
+          config.btcBetAmount,
           sepMoonOrDoomBTCAddress,
           sepMoonDoomBTCContract,
         ]
         break
 
       case Tokens.ETH:
-        ;[contractAddress, contract] = [
+        ;[betAmount, contractAddress, contract] = [
+          config.ethBetAmount,
           sepMoonOrDoomETHAddress,
           sepMoonDoomETHContract,
         ]
@@ -170,9 +174,9 @@ const start = async () => {
 
     const minEntryNum = minEntry as bigint
 
-    if (parseEther(ethBetAmount) < minEntryNum) {
+    if (parseEther(betAmount) < minEntryNum) {
       log(
-        `[ERROR] Failed while starting ETH moonerdoomer. Eth bet amount (${ethBetAmount}) is current less than minEntry ${formatEther(minEntryNum)}`
+        `[ERROR] Failed while starting ETH moonerdoomer. Eth bet amount (${betAmount}) is current less than minEntry ${formatEther(minEntryNum)}`
       )
       process.exit(1)
     }
@@ -198,7 +202,7 @@ const start = async () => {
 
           if (canEnterRound && epoch) {
             log(`[INFO] Entering round at epoch ${epoch}`)
-            onNewRoundStarted(epoch, contractAddress)
+            onNewRoundStarted(betAmount, epoch, contractAddress)
           }
         },
       }

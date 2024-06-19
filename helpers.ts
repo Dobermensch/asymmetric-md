@@ -7,14 +7,13 @@ import {
 } from 'viem'
 import { getLogger, sepoliaClient, sepoliaWalletClient } from './constants'
 import { Rounds } from './types'
-import config from './config'
 import MoonOrDoomAbi from './abis/MoonOrDoom.json'
 
-const ethBetAmount = config.ethBetAmount!
 const log = getLogger()
 
 export const calculateTotalTXValue = async (
   account: PrivateKeyAccount,
+  betAmount: bigint,
   epoch: bigint,
   round: Rounds,
   txReceipt: TransactionReceipt
@@ -24,7 +23,7 @@ export const calculateTotalTXValue = async (
 
   const totalGasAmountUsedMoonTx = moonTxEffectiveGasPrice * moonTxGasUsed
 
-  const totalValueOfMoonTx = parseEther(ethBetAmount) + totalGasAmountUsedMoonTx
+  const totalValueOfMoonTx = betAmount + totalGasAmountUsedMoonTx
 
   log(
     `[Success] Entered ${round} round at epoch ${epoch} for a total of ${formatEther(totalValueOfMoonTx)}`
