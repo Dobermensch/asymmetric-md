@@ -14,10 +14,11 @@ import MoonOrDoomAbi from './abis/MoonOrDoom.json'
 import config from './config'
 import { Address, formatEther, parseEther } from 'viem'
 import { Rounds, Tokens } from './types'
-import { calculateTotalTXValue } from './helpers'
+import { calculateTotalTXValue, claimRewards } from './helpers'
 
 const ethBetAmount = config.ethBetAmount!
 const maxNumberOfRounds = config.numOfRounds
+let roundsEntered: bigint[] = []
 let roundNumber = 0
 
 const onNewRoundStarted = async (epoch: bigint, contractAddress: Address) => {
@@ -91,6 +92,22 @@ const onNewRoundStarted = async (epoch: bigint, contractAddress: Address) => {
   )
 
   roundNumber++
+
+  roundsEntered.push(epoch)
+
+  // claim rewards
+  if (roundsEntered.length >= config.claimAfterRounds) {
+    const isSuccess = await claimRewards(
+      moonerAccount,
+      contractAddress,
+      doomerAccount,
+      roundsEntered
+    )
+    if (!isSuccess) {
+      process.exit(1)
+    }
+    roundsEntered = []
+  }
 }
 
 const start = async () => {
@@ -144,13 +161,10 @@ const start = async () => {
       process.exit(1)
     }
 
-    const [currentEpoch, minEntry] = await Promise.all([
+    const [_currentEpoch, minEntry] = await Promise.all([
       contract.read.currentEpoch(),
       contract.read.minEntry(),
     ])
-
-    console.log('currentEpoch: ', currentEpoch)
-    console.log('minEntry: ', formatEther(minEntry as any))
 
     const minEntryNum = minEntry as bigint
 
@@ -167,21 +181,22 @@ const start = async () => {
         async onLogs(logs: any) {
           const [log] = logs
 
+          const epoch = log?.args?.epoch
+
           const data = await sepoliaClient.readContract({
             address: contractAddress,
             abi: MoonOrDoomAbi,
             functionName: 'rounds',
-            args: [log.args.epoch],
+            args: [epoch],
           })
 
           const block = await sepoliaClient.getBlock()
 
           const canEnterRound = isRoundEnterable(data, block.timestamp)
 
-          console.log('isRoundEnterable: ', canEnterRound)
-
-          if (canEnterRound) {
-            onNewRoundStarted(log.args.epoch, contractAddress)
+          if (canEnterRound && epoch) {
+            console.log(`[INFO] Entering round at epoch ${epoch}`)
+            onNewRoundStarted(epoch, contractAddress)
           }
         },
       }
