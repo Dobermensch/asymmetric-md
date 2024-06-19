@@ -23,4 +23,5 @@ We have to automate https://yologames.io/moon-or-doom/blast/eth-usd. The smart c
 - #### Ensure the setup is as secure as possible, and detail out how you would think about security, given that we are likely going to have put private keys on our server. Explain your thought process. ANSWER: Use [Vault](https://www.vaultproject.io/use-cases/secrets-management) for secrets management. That way even if your server is compromised, the private key values will be inaccessible in the environment variables.
 
 ## TODO
+
 - Do an error check such that after the placing of a bet, the amount reducing in our ETH account matches what we expect in the bet amount plus gas fees.

@@ -22,7 +22,11 @@ let roundNumber = 0
 
 const log = getLogger()
 
-const onNewRoundStarted = async (betAmt: string, epoch: bigint, contractAddress: Address) => {
+const onNewRoundStarted = async (
+  betAmt: string,
+  epoch: bigint,
+  contractAddress: Address
+) => {
   if (roundNumber >= config.numOfRounds) {
     log(
       `[INFO] ROUNDS (${roundNumber}) exceeds max number of rounds (${maxNumberOfRounds})`
@@ -119,9 +123,7 @@ const start = async () => {
     !process.env.DOOMER_WALLET_PRIVATE_KEY ||
     !process.env.MOONER_WALLET_PRIVATE_KEY
   ) {
-    log(
-      '[ERROR] Please set the wallet private keys for mooner and doomer!'
-    )
+    log('[ERROR] Please set the wallet private keys for mooner and doomer!')
     process.exit(1)
   }
 
@@ -138,7 +140,7 @@ const start = async () => {
     }
 
     let betAmount = '0'
-    let contractAddress
+    let contractAddress: Address = '0x'
     let contract
 
     switch (token) {
@@ -162,7 +164,7 @@ const start = async () => {
         break
     }
 
-    if (!contractAddress || !contract) {
+    if (contractAddress === '0x' || !contract) {
       log(`[ERROR] The contract for ${token} wasn't initialized!`)
       process.exit(1)
     }
@@ -180,6 +182,8 @@ const start = async () => {
       )
       process.exit(1)
     }
+
+    log('[INFO] Listeing for StartRound event started')
 
     unwatch = contract.watchEvent.StartRound(
       {},
@@ -203,12 +207,16 @@ const start = async () => {
           if (canEnterRound && epoch) {
             log(`[INFO] Entering round at epoch ${epoch}`)
             onNewRoundStarted(betAmount, epoch, contractAddress)
+          } else {
+            log(
+              `[INFO] Cannot enter round (canEnterRound: ${canEnterRound}) at epoch ${epoch}`
+            )
           }
         },
       }
     )
   } catch (e) {
-    log('[ERROR - ETH]: Problem starting moonerdoomer')
+    log('[ERROR]: Problem starting moonerdoomer')
     console.error(e)
     unwatch()
   }
