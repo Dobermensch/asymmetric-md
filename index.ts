@@ -114,7 +114,7 @@ const onNewRoundStarted = async (betAmt: string, epoch: bigint, contractAddress:
 }
 
 const start = async () => {
-  let unwatch
+  let unwatch = () => {}
   if (
     !process.env.DOOMER_WALLET_PRIVATE_KEY ||
     !process.env.MOONER_WALLET_PRIVATE_KEY
@@ -210,7 +210,7 @@ const start = async () => {
   } catch (e) {
     log('[ERROR - ETH]: Problem starting moonerdoomer')
     console.error(e)
-    unwatch && unwatch()
+    unwatch()
   }
 }
 
