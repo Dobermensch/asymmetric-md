@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { Address, formatEther, parseEther } from 'viem'
 import {
   doomerAccount,
   getLogger,
@@ -12,7 +13,6 @@ import {
 } from './constants'
 import MoonOrDoomAbi from './abis/MoonOrDoom.json'
 import config from './config'
-import { Address, formatEther, parseEther } from 'viem'
 import { Rounds, Tokens } from './types'
 import { calculateTotalTXValue, claimRewards } from './helpers'
 
@@ -34,9 +34,23 @@ const onNewRoundStarted = async (
     process.exit(1)
   }
 
-  // Can choose to simulate contracts before writing
-
   const betAmount = parseEther(betAmt)
+
+  const moonTxGasEstimate = await sepoliaClient.estimateContractGas({
+    abi: MoonOrDoomAbi,
+    account: moonerAccount,
+    address: contractAddress,
+    args: [epoch],
+    functionName: 'enterMoon',
+    value: betAmount
+  })
+
+  if (!moonTxGasEstimate) {
+    log(`[ERROR] Could not estimate enterMoon gas. Got gas value: ${moonTxGasEstimate}`)
+    process.exit(1)
+  }
+
+  // Can choose to simulate contracts before writing
 
   const moonTxHash = await sepoliaWalletClient.writeContract({
     abi: MoonOrDoomAbi,
@@ -63,11 +77,26 @@ const onNewRoundStarted = async (
     moonerAccount,
     betAmount,
     epoch,
+    moonTxGasEstimate,
     Rounds.MOON,
     confirmedMoonTxReceipt
   )
 
   // Entering Doom round with doomer wallet
+
+  const doomTxGasEstimate = await sepoliaClient.estimateContractGas({
+    abi: MoonOrDoomAbi,
+    account: doomerAccount,
+    address: contractAddress,
+    args: [epoch],
+    functionName: 'enterDoom',
+    value: betAmount
+  })
+
+  if (!doomTxGasEstimate) {
+    log(`[ERROR] Could not estimate enterDoom gas. Got gas value: ${doomTxGasEstimate}`)
+    process.exit(1)
+  }
 
   const doomTxHash = await sepoliaWalletClient.writeContract({
     abi: MoonOrDoomAbi,
@@ -94,6 +123,7 @@ const onNewRoundStarted = async (
     doomerAccount,
     betAmount,
     epoch,
+    doomTxGasEstimate,
     Rounds.DOOM,
     confirmedDoomTxReceipt
   )

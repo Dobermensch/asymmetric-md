@@ -1,7 +1,6 @@
 import {
   PrivateKeyAccount,
   TransactionReceipt,
-  parseEther,
   formatEther,
   Address,
 } from 'viem'
@@ -15,6 +14,7 @@ export const calculateTotalTXValue = async (
   account: PrivateKeyAccount,
   betAmount: bigint,
   epoch: bigint,
+  gasEstimate: bigint,
   round: Rounds,
   txReceipt: TransactionReceipt
 ) => {
@@ -36,6 +36,11 @@ export const calculateTotalTXValue = async (
   log(
     `[INFO] Current ${round === Rounds.MOON ? Rounds.MOON : Rounds.DOOM} wallet value: ${formatEther(currentRoundWalletAccBalance)}`
   )
+
+  if (gasEstimate !== txReceipt.gasUsed) {
+    log(`[ERROR] ${round} tx gas estimate (${gasEstimate}) did not match actual ${round} tx gas used (${txReceipt.gasUsed})`)
+    process.exit(1)
+  }
 }
 
 export const claimRewards = async (
