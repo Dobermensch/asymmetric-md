@@ -15,6 +15,7 @@ export const calculateTotalTXValue = async (
   betAmount: bigint,
   epoch: bigint,
   gasEstimate: bigint,
+  gasThreshold: number,
   round: Rounds,
   txReceipt: TransactionReceipt
 ) => {
@@ -37,8 +38,8 @@ export const calculateTotalTXValue = async (
     `[INFO] Current ${round === Rounds.MOON ? Rounds.MOON : Rounds.DOOM} wallet value: ${formatEther(currentRoundWalletAccBalance)}`
   )
 
-  if (gasEstimate !== txReceipt.gasUsed) {
-    log(`[ERROR] ${round} tx gas estimate (${gasEstimate}) did not match actual ${round} tx gas used (${txReceipt.gasUsed})`)
+  if ((txReceipt.gasUsed - gasEstimate) > gasThreshold) {
+    log(`[ERROR] ${round} tx gas estimate (${gasEstimate}) did not match actual ${round} tx gas used (${txReceipt.gasUsed}) and exceeded value ${gasThreshold}`)
     process.exit(1)
   }
 }

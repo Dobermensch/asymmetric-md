@@ -17,6 +17,7 @@ import { Rounds, Tokens } from './types'
 import { calculateTotalTXValue, claimRewards } from './helpers'
 
 const maxNumberOfRounds = config.numOfRounds
+const gasThreshold = config.gasThreshold
 let roundsEntered: bigint[] = []
 let roundNumber = 0
 
@@ -78,6 +79,7 @@ const onNewRoundStarted = async (
     betAmount,
     epoch,
     moonTxGasEstimate,
+    gasThreshold,
     Rounds.MOON,
     confirmedMoonTxReceipt
   )
@@ -124,6 +126,7 @@ const onNewRoundStarted = async (
     betAmount,
     epoch,
     doomTxGasEstimate,
+    gasThreshold,
     Rounds.DOOM,
     confirmedDoomTxReceipt
   )
