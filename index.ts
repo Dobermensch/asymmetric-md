@@ -219,9 +219,9 @@ const start = async () => {
       {},
       {
         async onLogs(logs: any) {
-          const [log] = logs
+          const [logInfo] = logs
 
-          const epoch = log?.args?.epoch
+          const epoch = logInfo?.args?.epoch
 
           const data = await sepoliaClient.readContract({
             address: contractAddress,
